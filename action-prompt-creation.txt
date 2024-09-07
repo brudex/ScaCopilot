@@ -1,0 +1,363 @@
+I want to create an SK prompt for creating actions for the USSD app. the AI wil be provided with all menus with their actions. Not all menus have actions. Actions are added to menus per the functional requirements. Based on the user's request it is supossed to modify or create new actions. The output of the prompt should be the payload for creating new actions and nothing else. If and action item needs modification the array should include all actions that need to be present together with the modified ones. In other words for each returned result all previous actions will be cleared and replaced with the new list.
+
+The following are the different types of actions that can be created. the type of action determined by the `inheritsPlugin` field
+
+1. restapi //calling api endpoints
+2. javascript //javascript code to be executed
+
+To create  actions you include the various action items in an array. The action items must be arranged in the order they are to be executed. 
+//Sample payload for creation actions for a menu
+{
+  "uniqueId": "d0d40ba9-b79f-42bd-9c92-b24fdaa7768a", //unique ID of menu also called the menuId
+  "actions": [
+    {
+      "actionName": "buildPayMerchantPayload", //uniqueAction name must be a valid javascript variable name. the name can be used in other actions to get the results of this action
+      "actionType": "pre", //determins when the action will be executed , pre=action will be executed before menu shows, post=action will be executed after menu shows
+      "inheritsPlugin": "javascript", //the plugin type determins what type of action is to be executed 
+      "code": "" //string or object containing the body of the action
+    },
+    {
+      "actionName": "makePayment",
+      "actionType": "pre",
+      "inheritsPlugin": "restapi",
+      "code":  {} 
+    },
+    {
+      "actionName": "handlePaymentResponse",
+      "actionType": "post", //post means this action will be executed after the menu has been show to the user
+      "inheritsPlugin": "javascript",
+      "code": ""
+    }
+  ]
+}
+
+
+
+**Adding a restapi action item**
+A restapi action allows you to call and external endpoint and return data to be used in you USSD app.
+You can include the user's input in restapi calls by using mustache  template strings. All data is stored in `session.inputs` you can retrieve additional field values using dot notation in mustache placeholders 
+All user inputs are stored in session.inputs 
+If the inputHolder value of a menu is gender for example, the value entered by the user will be stored in session.inputs.gender
+If the inputHolder value of a menu is fullName for example, the value entered by the user will be stored in session.inputs.fullName
+The user's phone Number used to dial is stored in session.mobile
+The network of the user's phone nuber is stored in session.network
+E.t.c
+E.g. {{session.inputs.fullName}} - this will pull the fullName value entered by the user at runtime. The inputHolder field contains the fieldName
+E.g. {{session.inputs.gender}} - this will pull the gender value entered by the user at runtime. The inputHolder field contains the fieldName
+Below are sample restapi action items
+Example 1
+
+{
+      "actionName": "makePayment", //uniqueAction name must be a valid javascript variable name. the name can be used in other actions to get the results of this action
+      "actionType": "pre", //pre or post
+      "inheritsPlugin": "restapi", //indicating this action is a restapi action
+      "code": {
+        "payload": "{{{session.inputs.payMerchantPayload}}}", //The rest body is passed as a string. It can be a json string or xml or any text. For this example, the payload for is stored in session.inputs.payMerchantPayload. Three curly braces are used to prevent character escape from the mustache engine.
+        "basicAuth":  {"username": "ApiUsername", "password": "ApiPassword" }, //For Basic authentication authorization include username and password hear
+        "headers": [
+          {
+            "headerKey": "API-KEY",
+            "headerValue": "k97VZWvpnj7g2MeQtOmWemha9eOA3wkFE89lC76ELfhfMiukuegVsd04HoRAko18"
+          }
+        ], //http headers to be included in the api call
+        "method": "POST", //http method e.g. GET,POST,PUT,DELETE 
+        "url": "https://172.19.50.21/UssdApi/api/MerchantPay/PayMerchant2",
+        "contentType": "application/json" //contentType e.g. application/json, application/javascript, application/x-www-form-urlencoded, application/xml, text/xml
+      }
+}
+
+Example 2
+{
+      "actionName": "validateMerchantPin", //uniqueAction name must be a valid javascript variable name. the name can be used in other actions to get the results of this action
+      "actionType": "pre", //pre or post
+      "inheritsPlugin": "restapi", //indicating this action is a restapi action
+      "code": {
+		  "headers": [],
+		  "basicAuth": {},
+		  "method": "POST",
+		  "contentType": "application/json",
+		  "payload": "{\n\"action\":\"validateMerchantPin\",\n\"pin\":\"{{session.inputs.pin}}\",\n\"mobileNumber\":\"{{session.mobile}}\"\n}", //Mustache placeholder will be replaced with actual values from user inputs when calling the restapi. the AI should just formulate the action item  with appropriate placeholders 
+		  "url": "https://integrations.shortcodeafrica.com/api/kindpay/processRequest"
+	  }
+}
+
+Example 3
+{
+      "actionName": "checkRegistration", //uniqueAction name must be a valid javascript variable name. the name can be used in other actions to get the results of this action
+      "actionType": "pre", //pre or post
+      "inheritsPlugin": "restapi", //indicating this action is a restapi action
+      "code": {
+		  "payload": "{}",
+		  "basicAuth": {},
+		  "headers": [],
+		  "method": "GET",
+		  "url": "https://api.makechoicesgh.com/api/checkregister.php?phone_number={{session.mobile}}", //mustache place holders can also be put into urls. here the mobile number of the user will be replace when calling the api
+		  "contentType": "application/json"
+	  }
+}
+
+Example 4
+{
+      "actionName": "airtimeTopupApi", //uniqueAction name must be a valid javascript variable name. the name can be used in other actions to get the results of this action
+      "actionType": "post", //pre or post
+      "inheritsPlugin": "restapi", //indicating this action is a restapi action
+      "code": {
+		  "basicAuth": {},
+		  "headers": [],
+		  "method": "POST",
+		  "url": "https://165.73.134.23:8913/topupservice/service",
+		  "contentType": "application/xml",
+		  "payload": `<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+					  xmlns:ext="http://external.interfaces.ers.seamless.com/">
+					   <SOAP-ENV:Header/>
+					   <SOAP-ENV:Body>
+					   <ext:requestTopup>
+					   <context>
+					   <clientReference>{{session.inputs.reference}}</clientReference>
+					      <initiatorPrincipalId>
+					   <userId>{{session.inputs.userId}}}</userId>
+					   </initiatorPrincipalId>
+					   <password>{{session.inputs.pin}}</password>
+					   </context>
+					   <senderPrincipalId>
+					   <id>{{session.inputs.id}}</id>
+					   <type>RESELLERID</type>
+					   </senderPrincipalId>
+					   <topupPrincipalId>
+					   <id>{{session.mobile}}</id>
+					   <type>SUBSCRIBERMSISDN</type>
+					   </topupPrincipalId>
+					   <amount>
+					   <currency>SZL</currency>
+					   <value>{{session.inputs.amount}}</value>
+					   </amount>
+					   </ext:requestTopup>
+					   </SOAP-ENV:Body>
+					  </SOAP-ENV:Envelope>`
+		}
+}
+
+
+
+**Adding a javascript action item**
+
+Javascript action item allows you execute code to 
+1. Control menu navigation
+2. Extract values from user's input
+3. Transform values into other formats for use in api calls
+4. Set session variable values for use in other actions
+5. Format or formulate api payloads and save them in session variables
+e.t.c
+
+## When writing javascript for an action some inbuilt methods and variables are available for use:
+
+
+#### Inbuilt Available Variables 
+| Description | Variable |
+| --- | --- |
+| User's current input for this menu | `this.inRequest.input` |
+| Mobile number of dialer | `this.session.mobile` |
+| Network of dialer | `this.session.network` |
+| Session ID | `this.session.sessionId` |
+| Use this syntax to access user input. Every menu comes with an inputHolder field | `this.session.inputs.[inputHolderName]` |
+
+#### Inbuilt Available Methods 
+| Description | Variable |
+| --- | --- |
+| Dynamically add menu option | `this.menu.addListItem('1','This is a Menu Option');` |
+| Goto to specific menu | `this.goto('mainMenu');` |
+| The option label by the number of the menu item | `this.menu.getOptionText('1');` |
+| Boolean Value. Terminates current session if set to true. | `this.terminate` |
+| Get results of previously executed actions by actionName | `this.actionResults.['actionName']` |
+| Save value in session variable. Can be retrieved with this.session.inputs.fullName | `this.session.setSessionValue('fullName','John Doe')` |
+| Log data for debugging. Methods debug, info, error | `this.logger.info('The log message', obj)` |
+
+
+## Code Examples
+#### Dynamically add menu options based on input from user
+
+```javascript
+
+    switch (this.inRequest.input) {
+        case "1":{
+            this.menu.addListItem("1","300 Upfront annually");
+            this.menu.addListItem("2","78 Upfront per quarter");
+            break;
+        }
+        case "2":{
+            this.menu.addListItem("1","480 Upfront annually ");
+            this.menu.addListItem("2","125 Upfront per quarter");
+            break;
+        }
+    }
+```
+
+
+#### Set a session variable based on user input  
+```javascript
+    if (this.session.inputs.gender == "2") {
+        this.session.setSessionValue('genderDescription',"User is Female");
+	} else {
+	    this.session.setSessionValue('genderDescription',"User is Male");
+	}  
+```
+ 
+#### Set a session variable based on user input  
+```javascript
+    if (this.session.inputs.gender == "2") {
+        this.session.setSessionValue('genderDescription',"User is Female");
+	} else {
+	    this.session.setSessionValue('genderDescription',"User is Male");
+	}  
+``` 
+
+  
+
+#### Branch to different page based on condition 
+
+```javascript
+	let genderDescription  = this.session.inputs.genderDescription;//retrieve saved input
+	this.menu.addText(genderDescription);   
+```
+
+  
+
+#### Build payload for rest api and assign a session variable or return it to use in next action
+
+```javascript
+     const payload = {};
+     payload.mobile = this.session.mobile;
+     payload.paymentPlan = this.session.inputs.paymentPlanLabel;
+     payload.amountPayable = this.session.inputs.amountPayable;
+     payload.paymentStatus = "PENDING";
+     payload.network= this.session.network;
+     payload.channel= 'USSD';
+     if(this.session.inputs.userInsured==="1"){
+         payload.userIsInsured=true;
+     }else{
+         payload.userIsInsured=false;
+     }
+
+     /**
+      * save value in session variable, value can get accessed at anytime during user's session
+      * Can be retrieved with this.session.inputs.payload
+      */
+     this.session.setSessionValue('payload',JSON.stringify(payload));
+
+      /**
+      * save value session variable, expires as soon as user moves to the next menu screen
+      * Can be retrieved with this.session.menuEnv.payload
+      */
+     this.session.setMenuEnvVariable('payload',JSON.stringify(payload));
+     return payload;
+    
+```
+
+#### Retrieve an action result in code
+
+```javascript
+    let userAccountsResults = this.actionResults['userAccountsRestApiCall']; //results from api call action
+	if(typeof userAccountsResults == 'string'){ //if results are returned as string 
+	    userAccountsResults = JSON.parse(userAccountsResults); //convert to javascript array
+	} 
+	if(userAccountsResults.length > 0){
+	    this.goto('showAccountMenu'); //branch to different menu using the userDefinedMenuName
+	}else{
+	    this.goto('noAccountsFoundMenu');
+	}  
+```
+
+#### Retrieve action result from and parse as json 
+
+```javascript
+	let result = this.actionResults['makePayment']; //retrieve result from previously executed action by actionName
+	console.log('The action resullt',result);
+	if(typeof result == 'string'){
+	    try{
+	        result = JSON.parse(result);
+	    }catch(e){
+	        result ={};
+	        console.log('Error parsing result from validateStudentID',result);
+	        this.session.setSessionValue('makePaymentResponse',"There was an error. Try again later");
+	    }
+	} 
+	let message = result.Message || "There was an error. Please try again later";
+	this.session.setSessionValue('makePaymentResponse',message); 
+```
+
+
+
+After you write you javascript code you pass it as a string to the code field to create an action item:
+
+Example 1 :
+{
+      "actionName": "makePaymentResponse",
+      "actionType": "post",
+      "inheritsPlugin": "javascript",
+      "code": "let response = this.session.inputs.makePayment;\nlet message = \"\";\nif (response.Status == \"00\") {\n    message = `Payment of GHS ${response.Amount} to ${response.MerchantName} was successful. Reference: ${response.Reference}`;\n} else {\n    message = `Payment of GHS ${response.Amount} to ${response.MerchantName} failed. ${response.Message}`;\n}\nthis.session.setSessionValue('makePaymentResponse', message);\n"
+}
+
+Example 2 :
+ {
+      "actionName": "buildPayMerchantPayload",
+      "actionType": "pre",
+      "inheritsPlugin": "javascript",
+      "code": "let merchantCode = this.session.inputs.merchantCodeMenu || this.session.inputs.merchantCode;\nlet isSchoolFees = this.session.inputs.aisMainMenu == \"1\";\nlet amount = \"0\";\nlet fromAccount = this.session.inputs[\"bankAccountListLabel\"] || '';\nlet registeredMobile = this.session.mobile;\nlet IsMomoPayment = this.session.inputs[\"paymentMode\"] == \"1\";\nlet pin = this.session.inputs[\"pin\"] || '';\nlet school = this.session.inputs[\"selectedSchoolFeesLabel\"];\nlet isOtherCollections = false;\nlet isFormsCollection = false\nif (isSchoolFees) {\n    amount = this.session.inputs.amountSchoolFees;\n    school = this.session.inputs[\"selectedSchoolFeesLabel\"];\n    merchantCode = '112';\n} else {\n    amount = this.session.inputs.amountOtherPayments;\n    school = this.session.inputs['selectSchoolOtherCollectionsLabel'];\n    merchantCode = '113';\n    isFormsCollection = true;\n}\nlet payload = {\n    \"MerchantCode\": merchantCode,\n    \"Fields\": [],\n    \"Reference\": \"\" + Date.now(),\n    \"Amount\": amount,\n    \"FromAccount\": fromAccount,\n    \"RegisteredMobile\": registeredMobile,\n    \"Pin\": pin,\n    \"IsMomoPayment\": IsMomoPayment,\n    \"MobileWallet\": this.session.mobile,\n    \"Network\": this.session.network\n}\nlet fields = [];\nif (isFormsCollection) {\n    let menuMapping = {\n        \"1\" :\"Non-Refundable Deposit\",\n        \"2\" :\"Admission Deposit\",\n        \"3\" :\"Registration - WASSCE\",\n        \"4\" :\"Registration - BECE\",\n        \"5\" :\"Graduation Fee\",\n        \"6\" :\"Summer Classes\",\n        \"7\" :\"Other Payments\"\n    };\n    let menuLabel = menuMapping[(\"\"+this.session.inputs.otherCollectionsMenu).trim()];\n    let field1 = {\n        \"Label\": \"Category\",\n        \"FieldValue\": menuLabel,\n        \"FieldNo\": \"field1\"\n    };\n\n    let schoolCode = '10';\n    if (school.toLowerCase().indexOf('akosombo') > -1) {\n        schoolCode = '10';\n    } else if (school.toLowerCase().indexOf('akuse') > -1) {\n        schoolCode = '20';\n    } else if (school.toLowerCase().indexOf('aboadze') > -1) {\n        schoolCode = '30';\n    }\n\n    let field2 = {\n        \"Label\": \"School Id\",\n        \"FieldValue\": schoolCode,\n        \"FieldNo\": \"field2\",\n    }\n    let field3 = {\n        \"Label\": \"Student Id\",\n        \"FieldValue\": this.session.inputs[\"studentName\"] || this.session.inputs[\"applicantName\"],\n        \"FieldNo\": \"field3\",\n    }\n    let field4 = {\n        \"Label\": \"Phone Number\",\n        \"FieldValue\": this.session.mobile,\n        \"FieldNo\": \"field4\",\n    } \n    payload[\"Fields\"].push(field1);\n    payload[\"Fields\"].push(field2);\n    payload[\"Fields\"].push(field3);\n    payload[\"Fields\"].push(field4);\n}\n\nif (isSchoolFees) {\n    let field1 = {\n        \"Label\": \"Category\",\n        \"FieldValue\": \"School Fees\",\n        \"FieldNo\": \"field1\"\n    };\n    \n    let field2 = {\n        \"Label\": \"Student Id\",\n        \"FieldValue\": this.session.inputs.studentID,\n        \"FieldNo\": \"field2\",\n    }\n    let field3 = {\n        \"Label\": \"Student Name\",\n        \"FieldValue\": this.session.inputs[\"studentName\"] || this.session.inputs[\"applicantName\"],\n        \"FieldNo\": \"field3\",\n    }\n    let schoolCode = '10';\n    if (school.toLowerCase().indexOf('akosombo') > -1) {\n        schoolCode = '10';\n    } else if (school.toLowerCase().indexOf('akuse') > -1) {\n        schoolCode = '20';\n    } else if (school.toLowerCase().indexOf('aboadze') > -1) {\n        schoolCode = '30';\n    }\n    let field4 = {\n        \"Label\": \"Student Class\",\n        \"FieldValue\": this.session.inputs.studentClass,\n        \"FieldNo\": \"field4\",\n    }\n    let field5 = {\n        \"Label\": \"Phone Number\",\n        \"FieldValue\": this.session.mobile,\n        \"FieldNo\": \"field5\",\n    }\n    let field6 = {\n        \"Label\": \"School Id\",\n        \"FieldValue\": schoolCode,\n        \"FieldNo\": \"field6\",\n    }\n    payload[\"Fields\"].push(field1);\n    payload[\"Fields\"].push(field2);\n    payload[\"Fields\"].push(field3);\n    payload[\"Fields\"].push(field4);\n    payload[\"Fields\"].push(field5);\n    payload[\"Fields\"].push(field6);\n}\nthis.session.setSessionValue('payMerchantPayload', JSON.stringify(payload));\nconsole.log('The payload >>', JSON.stringify(payload));\n"
+  }
+
+
+**Output Format**
+the output should be an array of all menus(uniqueId) where actions have been created or modified and their corresponding actions. 
+Example output as follows:
+
+[
+{
+  "uniqueId": "d0d40ba9-b79f-42bd-9c92-b24fdaa7768a",
+  "actions": [
+    {
+      "actionName": "buildPayMerchantPayload",
+      "actionType": "pre",
+      "inheritsPlugin": "javascript",
+      "code": "let merchantCode = this.session.inputs.merchantCodeMenu || this.session.inputs.merchantCode;\nlet isSchoolFees = this.session.inputs.aisMainMenu == \"1\";\nlet amount = \"0\";\nlet fromAccount = this.session.inputs[\"bankAccountListLabel\"] || '';\nlet registeredMobile = this.session.mobile;\nlet IsMomoPayment = this.session.inputs[\"paymentMode\"] == \"1\";\nlet pin = this.session.inputs[\"pin\"] || '';\nlet school = this.session.inputs[\"selectedSchoolFeesLabel\"];\nlet isOtherCollections = false;\nlet isFormsCollection = false\nif (isSchoolFees) {\n    amount = this.session.inputs.amountSchoolFees;\n    school = this.session.inputs[\"selectedSchoolFeesLabel\"];\n    merchantCode = '112';\n} else {\n    amount = this.session.inputs.amountOtherPayments;\n    school = this.session.inputs['selectSchoolOtherCollectionsLabel'];\n    merchantCode = '113';\n    isFormsCollection = true;\n}\nlet payload = {\n    \"MerchantCode\": merchantCode,\n    \"Fields\": [],\n    \"Reference\": \"\" + Date.now(),\n    \"Amount\": amount,\n    \"FromAccount\": fromAccount,\n    \"RegisteredMobile\": registeredMobile,\n    \"Pin\": pin,\n    \"IsMomoPayment\": IsMomoPayment,\n    \"MobileWallet\": this.session.mobile,\n    \"Network\": this.session.network\n}\nlet fields = [];\nif (isFormsCollection) {\n    let menuMapping = {\n        \"1\" :\"Non-Refundable Deposit\",\n        \"2\" :\"Admission Deposit\",\n        \"3\" :\"Registration - WASSCE\",\n        \"4\" :\"Registration - BECE\",\n        \"5\" :\"Graduation Fee\",\n        \"6\" :\"Summer Classes\",\n        \"7\" :\"Other Payments\"\n    };\n    let menuLabel = menuMapping[(\"\"+this.session.inputs.otherCollectionsMenu).trim()];\n    let field1 = {\n        \"Label\": \"Category\",\n        \"FieldValue\": menuLabel,\n        \"FieldNo\": \"field1\"\n    };\n\n    let schoolCode = '10';\n    if (school.toLowerCase().indexOf('akosombo') > -1) {\n        schoolCode = '10';\n    } else if (school.toLowerCase().indexOf('akuse') > -1) {\n        schoolCode = '20';\n    } else if (school.toLowerCase().indexOf('aboadze') > -1) {\n        schoolCode = '30';\n    }\n\n    let field2 = {\n        \"Label\": \"School Id\",\n        \"FieldValue\": schoolCode,\n        \"FieldNo\": \"field2\",\n    }\n    let field3 = {\n        \"Label\": \"Student Id\",\n        \"FieldValue\": this.session.inputs[\"studentName\"] || this.session.inputs[\"applicantName\"],\n        \"FieldNo\": \"field3\",\n    }\n    let field4 = {\n        \"Label\": \"Phone Number\",\n        \"FieldValue\": this.session.mobile,\n        \"FieldNo\": \"field4\",\n    } \n    payload[\"Fields\"].push(field1);\n    payload[\"Fields\"].push(field2);\n    payload[\"Fields\"].push(field3);\n    payload[\"Fields\"].push(field4);\n}\n\nif (isSchoolFees) {\n    let field1 = {\n        \"Label\": \"Category\",\n        \"FieldValue\": \"School Fees\",\n        \"FieldNo\": \"field1\"\n    };\n    \n    let field2 = {\n        \"Label\": \"Student Id\",\n        \"FieldValue\": this.session.inputs.studentID,\n        \"FieldNo\": \"field2\",\n    }\n    let field3 = {\n        \"Label\": \"Student Name\",\n        \"FieldValue\": this.session.inputs[\"studentName\"] || this.session.inputs[\"applicantName\"],\n        \"FieldNo\": \"field3\",\n    }\n    let schoolCode = '10';\n    if (school.toLowerCase().indexOf('akosombo') > -1) {\n        schoolCode = '10';\n    } else if (school.toLowerCase().indexOf('akuse') > -1) {\n        schoolCode = '20';\n    } else if (school.toLowerCase().indexOf('aboadze') > -1) {\n        schoolCode = '30';\n    }\n    let field4 = {\n        \"Label\": \"Student Class\",\n        \"FieldValue\": this.session.inputs.studentClass,\n        \"FieldNo\": \"field4\",\n    }\n    let field5 = {\n        \"Label\": \"Phone Number\",\n        \"FieldValue\": this.session.mobile,\n        \"FieldNo\": \"field5\",\n    }\n    let field6 = {\n        \"Label\": \"School Id\",\n        \"FieldValue\": schoolCode,\n        \"FieldNo\": \"field6\",\n    }\n    payload[\"Fields\"].push(field1);\n    payload[\"Fields\"].push(field2);\n    payload[\"Fields\"].push(field3);\n    payload[\"Fields\"].push(field4);\n    payload[\"Fields\"].push(field5);\n    payload[\"Fields\"].push(field6);\n}\nthis.session.setSessionValue('payMerchantPayload', JSON.stringify(payload));\nconsole.log('The payload >>', JSON.stringify(payload));\n"
+    },
+    {
+      "actionName": "makePayment",
+      "actionType": "pre",
+      "inheritsPlugin": "restapi",
+      "code": {
+        "payload": "{{{session.inputs.payMerchantPayload}}}",
+        "basicAuth": {},
+        "headers": [
+          {
+            "headerKey": "API-KEY",
+            "headerValue": "k97VZWvpnj7g2MeQtOmWemha9eOA3wkFE89lC76ELfhfMiukuegVsd04HoRAko18"
+          }
+        ],
+        "method": "POST",
+        "url": "https://172.19.50.21/UssdApi/api/MerchantPay/PayMerchant2",
+        "contentType": "application/json"
+      }
+    },
+    {
+      "actionName": "makePaymentResponse",
+      "actionType": "post",
+      "inheritsPlugin": "javascript",
+      "code": "let response = this.session.inputs.makePayment;\nlet message = \"\";\nif (response.Status == \"00\") {\n    message = `Payment of GHS ${response.Amount} to ${response.MerchantName} was successful. Reference: ${response.Reference}`;\n} else {\n    message = `Payment of GHS ${response.Amount} to ${response.MerchantName} failed. ${response.Message}`;\n}\nthis.session.setSessionValue('makePaymentResponse', message);\n"
+    }
+  ]
+},
+
+{
+  "uniqueId": "7b567475-810b-4585-9ee5-2c9c6939fc41",
+  "actions": [
+    {
+      "actionName": "translateApiResponse",
+      "actionType": "pre",
+      "inheritsPlugin": "javascript",
+      "code": "let response = this.session.inputs.makePayment;\nlet message = \"\";\nif (response.Status == \"00\") {\n    message = `Payment of GHS ${response.Amount} to ${response.MerchantName} was successful. Reference: ${response.Reference}`;\n} else {\n    message = `Payment of GHS ${response.Amount} to ${response.MerchantName} failed. ${response.Message}`;\n}\nthis.session.setSessionValue('makePaymentResponse', message);\n"
+    }
+  ]
+}
+]
+
+

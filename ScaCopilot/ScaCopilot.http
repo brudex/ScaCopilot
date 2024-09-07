@@ -1,0 +1,6 @@
+@ScaCopilot_HostAddress = http://localhost:5229
+
+GET {{ScaCopilot_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

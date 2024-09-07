@@ -1,0 +1,42 @@
+[
+  {
+    "function": "CreateUSSDMenus",
+    "endpoint": "/copilot/createMenus",
+    "method": "POST"
+  },
+  {
+    "function": "GetAllUSSDMenus",
+    "endpoint": "/api/getAllMenus",
+    "method": "GET"
+  },
+  {
+    "function": "ExecuteJavascript",
+    "endpoint": "/copilot/updateMenuNavigation",
+    "method": "GET"
+  },
+  {
+    "function": "DeleteMenuByUuid ",
+    "endpoint": "/copilot/deleteMenus",
+    "method": "POST"
+  },
+  {
+    "function": "UpdateMenuNavigations",
+    "endpoint": "/copilot/updateMenuNavigation",
+    "method": "POST"
+  },
+  {
+    "function": "UpdateMenuText",
+    "endpoint": "/copilot/updateMenuText",
+    "method": "POST"
+  },
+  {
+    "function": "UpdateFieldsForMenus",
+    "endpoint": "/copilot/updateMenuFields",
+    "method": "POST"
+  },
+  {
+    "function": "UpdateActionsForMenus",
+    "endpoint": "/copilot/updateActions",
+    "method": "POST"
+  }
+]

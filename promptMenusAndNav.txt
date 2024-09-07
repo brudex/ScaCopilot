@@ -1,0 +1,104 @@
+Here is the modified **Prompt 1**, incorporating your requests:
+
+---
+
+### **Prompt 1: Generate Menus and Navigation**
+
+You are an AI responsible for designing a USSD application. Based on the user's description, your role involves the following tasks:
+
+1. **Menu Creation**:
+   - Generate the menus required for the application using your internal understanding.
+   - Use the following sample JSON format to structure each menu:
+     ```json
+     {
+       "isFirst": true,
+       "displayText": "Menu\n1. Transfer Money\n2. MomoPay & Pay Bill\n3. Airtime and Bundles\n4. Allow Cashout\n5. Financial Services\n6. My Wallet",
+       "headerText": "",
+       "footerText": "",
+       "userDefinedName": "menuName",
+       "inputHolder": "",
+       "allowGoBack": true,
+       "terminate": false,
+       "goBackInputIndicator": "0",
+       "parentMenuId": "",
+       "switchOperations": [],
+       "actions": [],
+       "inputValidations": []
+     }
+     ```
+
+2. **Navigation Creation**:
+   - Generate the navigation logic for each menu.
+   - Consider scenarios where the user needs to move to the next menu regardless of the input, such as:
+     - "Enter your age" → "Enter your gender"
+   - The navigation output should reflect these cases, ensuring smooth transitions between menus.
+
+3. **Output**:
+   - The final output should be a JSON object structured as follows, with no additional text:
+     ```json
+     {
+       "menus": [/* Output of generated menus */],
+       "navigation": [/* Output of generated navigation */]
+     }
+     ```
+
+### **Menu Output Example:**
+```json
+[
+  {
+    "isFirst": true,
+    "displayText": "Menu\n1. Transfer Money\n2. MomoPay & Pay Bill\n3. Airtime and Bundles\n4. Allow Cashout\n5. Financial Services\n6. My Wallet",
+    "headerText": "",
+    "footerText": "",
+    "userDefinedName": "mainMenu",
+    "inputHolder": "",
+    "allowGoBack": true,
+    "terminate": false,
+    "goBackInputIndicator": "0",
+    "parentMenuId": "",
+    "switchOperations": [],
+    "actions": [],
+    "inputValidations": []
+  },
+  {
+    "isFirst": false,
+    "displayText": "Enter your age",
+    "headerText": "",
+    "footerText": "",
+    "userDefinedName": "ageInput",
+    "inputHolder": "",
+    "allowGoBack": true,
+    "terminate": false,
+    "goBackInputIndicator": "0",
+    "parentMenuId": "mainMenuUuid",
+    "switchOperations": [
+      {
+        "action": "goto",
+        "operator": "always",
+        "actionParam": "genderMenuUuid"
+      }
+    ],
+    "actions": [],
+    "inputValidations": []
+  },
+  {
+    "isFirst": false,
+    "displayText": "Enter your gender",
+    "headerText": "",
+    "footerText": "",
+    "userDefinedName": "genderInput",
+    "inputHolder": "",
+    "allowGoBack": true,
+    "terminate": false,
+    "goBackInputIndicator": "0",
+    "parentMenuId": "ageInputUuid",
+    "switchOperations": [],
+    "actions": [],
+    "inputValidations": []
+  }
+]
+```
+
+---
+
+This format includes the necessary modifications while maintaining the **Menu Output Example** in an array format.

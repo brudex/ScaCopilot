@@ -1,0 +1,92 @@
+Translated content: [
+    {
+        "function": "CreateUSSDMenus",
+        "argument": [
+            {
+                "menuId": "1a3e5b14-30c3-4b6e-a9e6-471fd516c04b",
+                "isFirst": true,
+                "displayText": "Menu\n1. Check Balance\n2. Transfer Funds\n3. Buy Airtime\n4. Mini Statement",
+                "headerText": "",
+                "footerText": "",
+                "userDefinedName": "mainMenu",
+                "inputHolder": "",
+                "allowGoBack": false,
+                "terminate": false,
+                "goBackInputIndicator": "0",
+                "parentMenuId": "",
+                "switchOperations": [],
+                "actions": [],
+                "inputValidations": []
+            }
+        ],
+        "index": 0
+    },
+    {
+        "function": "UpdateMenuNavigations",
+        "argument": [
+            {
+                "menuId": "1a3e5b14-30c3-4b6e-a9e6-471fd516c04b",
+                "switchOperations": [
+                    {
+                        "action": "goto",
+                        "actionParam": "5e685657-e3db-4f35-9bce-bb41adf86f79", // MenuId for Transfer Funds
+                        "operator": "eq",
+                        "compareVal": "2"
+                    },
+                    {
+                        "action": "goto",
+                        "actionParam": "cb307bf9-1e2a-4464-b979-8fec993c98aa", // MenuId for Buy Airtime
+                        "operator": "eq",
+                        "compareVal": "3"
+                    }
+                ]
+            }
+        ],
+        "index": 1
+    },
+    {
+        "function": "CreateUSSDMenus",
+        "argument": [
+            {
+                "menuId": "5e685657-e3db-4f35-9bce-bb41adf86f79",
+                "isFirst": false,
+                "displayText": "Transfer Funds\n1. To Own Account\n2. To Other Account",
+                "headerText": "",
+                "footerText": "",
+                "userDefinedName": "transferFundsMenu",
+                "inputHolder": "transferFundsMenu",
+                "allowGoBack": true,
+                "terminate": false,
+                "goBackInputIndicator": "0",
+                "parentMenuId": "1a3e5b14-30c3-4b6e-a9e6-471fd516c04b",
+                "switchOperations": [],
+                "actions": [],
+                "inputValidations": []
+            }
+        ],
+        "index": 2
+    },
+    {
+        "function": "CreateUSSDMenus",
+        "argument": [
+            {
+                "menuId": "cb307bf9-1e2a-4464-b979-8fec993c98aa",
+                "isFirst": false,
+                "displayText": "Buy Airtime\n1. For Self\n2. For Others",
+                "headerText": "",
+                "footerText": "",
+                "userDefinedName": "buyAirtimeMenu",
+                "inputHolder": "buyAirtimeMenu",
+                "allowGoBack": true,
+                "terminate": false,
+                "goBackInputIndicator": "0",
+                "parentMenuId": "1a3e5b14-30c3-4b6e-a9e6-471fd516c04b",
+                "switchOperations": [],
+                "actions": [],
+                "inputValidations": []
+            }
+        ],
+        "index": 3
+    }
+]
+

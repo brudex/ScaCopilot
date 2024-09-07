@@ -1,0 +1,56 @@
+[
+{
+  "function": "CreateUSSDMenus",
+  "argument": [
+    {
+      "menuId": "1ac5bbac-ae44-4ff9-a33d-e9d077fbd20a",
+      "isFirst": true,
+      "displayText": "Menu\n1. Check Balance\n2. Transfer Funds\n3. Buy Airtime\n4. Mini Statement",
+      "userDefinedName": "mainMenu",
+      "inputHolder": "",
+      "allowGoBack": false,
+      "terminate": false,
+      "goBackInputIndicator": "0",
+      "parentMenuId": "",
+      "switchOperations": [],
+      "inputValidations": []
+    }
+  ],
+  "index": 0
+},
+{
+"function": "UpdateMenuNavigations",
+"argument": [
+{
+"menuId": "1ac5bbac-ae44-4ff9-a33d-e9d077fbd20a",
+"switchOperations": [
+{
+"action": "goto",
+"actionParam": "f04290a2-bef5-48a6-ace8-6ce51e813d77",
+"operator": "eq",
+"compareVal": "1"
+},
+{
+"action": "goto",
+"actionParam": "c8fbc763-c233-4040-851f-f0c249dd3cd3",
+"operator": "eq",
+"compareVal": "2"
+},
+{
+"action": "goto",
+"actionParam": "363c41de-033c-4312-b0e3-5f792c0c4c2a",
+"operator": "eq",
+"compareVal": "3"
+},
+{
+"action": "goto",
+"actionParam": "9119d6cb-94d2-48fd-8288-530f50baf09d",
+"operator": "eq",
+"compareVal": "4"
+}
+]
+}
+],
+"index": 1
+}
+]
