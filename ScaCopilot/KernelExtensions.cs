@@ -15,6 +15,17 @@ public static class KernelExtensions
         return mySkill;
     }
     
+    public static string ReadPromptFile(this Kernel kernel,string skillName)
+    {
+        Console.WriteLine("Getting Skill: >>> " + skillName);
+        var skillsDirectory = Path.Combine(System.IO.Directory.GetCurrentDirectory(), "skills");
+        Console.WriteLine("The skills directory is: >>> " + skillsDirectory);
+        var promptDirectory = Path.Combine(skillsDirectory, skillName,"skprompt.txt");
+        Console.WriteLine("Prompt Directory: >>> " + promptDirectory);
+        var promptContent = File.ReadAllText(promptDirectory);
+        return promptContent;
+    }
+    
     
     public static KernelArguments GetKernelArguments(this Kernel kernel,Dictionary<string,string> contextData)
     {

@@ -61,7 +61,6 @@ public class PromptService
             result = "Error connecting to ai service " + ex.Message;
             response.status = PromptResponse.StatusCodesException;
             response.message = result;
-            
         }
         return response;
     }
@@ -106,7 +105,6 @@ public class PromptService
             result = "Error connecting to ai service " + ex.Message;
             response.status = PromptResponse.StatusCodesException;
             response.message = result;
-            
         }
         return response;
     }
@@ -154,7 +152,6 @@ public class PromptService
     
     public async Task<CopilotResponse>  Execute(CopilotRequest request)
     {
-        
         Console.WriteLine("Prompt request received>>>>..."+request.ToJsonString());
         Logger.Info(this,"Prompt request received>>>>..."+request.ToJsonString());
         string input = request.prompt;
@@ -167,4 +164,18 @@ public class PromptService
         return response;
 
     }
+
+    //
+    // public async Task<CopilotResponse> Cordinate(CopilotRequest request)
+    // {
+    //     Console.WriteLine("Prompt request received>>>>..."+request.ToJsonString());
+    //     Logger.Info(this,"Prompt request received>>>>..."+request.ToJsonString());
+    //     var response = new CopilotResponse();
+    //
+    // }
+
+
+
+
+
 }
